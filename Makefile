@@ -57,10 +57,14 @@ FLOCQ=\
   Relative.v Sterbenz.v Round_odd.v Double_rounding.v \
   Binary.v Bits.v
 
+# Architecture files (in respective architecture folder)
+
+ARCHFILES=Archi.v
+
 # General-purpose libraries (in lib/)
 
 VLIB=Axioms.v Coqlib.v Intv.v Maps.v Heaps.v Lattice.v Ordered.v \
-  Iteration.v Zbits.v Integers.v Archi.v IEEE754_extra.v Floats.v \
+  Iteration.v Zbits.v Integers.v IEEE754_extra.v Floats.v \
   Parmov.v UnionFind.v Wfsimpl.v \
   Postorder.v FSetAVLplus.v IntvSets.v Decidableplus.v BoolEqual.v
 
@@ -101,6 +105,8 @@ BACKEND=\
   Bounds.v Stacklayout.v Stacking.v Stackingproof.v \
   Asm.v Asmgen.v Asmgenproof0.v Asmgenproof1.v Asmgenproof.v
 
+BACKEND_OPEN_SOURCE=Cminor.v
+  
 # C front-end modules (in cfrontend/)
 
 CFRONTEND=Ctypes.v Cop.v Csyntax.v Csem.v Ctyping.v Cstrategy.v Cexec.v \
@@ -109,6 +115,8 @@ CFRONTEND=Ctypes.v Cop.v Csyntax.v Csem.v Ctyping.v Cstrategy.v Cexec.v \
   Clight.v ClightBigstep.v SimplLocals.v SimplLocalsproof.v \
   Cshmgen.v Cshmgenproof.v \
   Csharpminor.v Cminorgen.v Cminorgenproof.v
+
+CFRONTEND_OPEN_SOURCE=Clight.v ClightBigstep.v Cop.v Csem.v Cstrategy.v Csyntax.v Ctypes.v Ctyping.v
 
 # Parser
 
@@ -126,8 +134,16 @@ DRIVER=Compopts.v Compiler.v Complements.v
 
 # All source files
 
-FILES=$(VLIB) $(COMMON) $(BACKEND) $(CFRONTEND) $(DRIVER) $(FLOCQ) \
+FILES=$(ARCHFILES) $(VLIB) $(COMMON) $(BACKEND) $(CFRONTEND) $(DRIVER) $(FLOCQ) \
   $(MENHIRLIB) $(PARSER)
+
+# All open source source files (in the order given in LICENSE)
+
+# ATTENTION: this also includes ./x86/Builtins1.vo - which is not open source but many files depend on it
+
+FILES_OPEN_SOURCE=$(VLIB) $(COMMON) $(CFRONTEND_OPEN_SOURCE) $(BACKEND_OPEN_SOURCE) $(PARSER) Clightdefs.v $(ARCHFILES) 
+
+# These files have non open dependencies: extractionMachdep.v, extraction.v
 
 # Generated source files
 
@@ -152,6 +168,8 @@ ifeq ($(INSTALL_COQDEV),true)
 endif
 
 proof: $(FILES:.v=.vo)
+
+proof_open_source: $(FILES_OPEN_SOURCE:.v=.vo) compcert.config
 
 # Turn off some warnings for compiling Flocq
 flocq/%.vo: COQCOPTS+=-w -compatibility-notation
@@ -181,7 +199,7 @@ runtime:
 
 FORCE:
 
-.PHONY: proof extraction runtime FORCE
+.PHONY: proof proof_open_source extraction runtime FORCE
 
 documentation: $(FILES)
 	mkdir -p doc/html
@@ -278,6 +296,18 @@ ifeq ($(INSTALL_COQDEV),true)
 	@(echo "To use, pass the following to coq_makefile or add the following to _CoqProject:"; echo "-R $(COQDEVDIR) compcert") > $(DESTDIR)$(COQDEVDIR)/README
 endif
 
+# ToDo: copy exactly the files in FILES_OPEN_SOURCE as soon as the issue with Builtins1 ins fixed
+install_open_source:
+ifeq ($(INSTALL_COQDEV),true)
+	install -d $(DESTDIR)$(COQDEVDIR)
+	for d in $(DIRS); do \
+          install -d $(DESTDIR)$(COQDEVDIR)/$$d && \
+          install -m 0644 $$d/*.vo $(DESTDIR)$(COQDEVDIR)/$$d/; \
+	done
+	install -m 0644 ./VERSION $(DESTDIR)$(COQDEVDIR)
+	install -m 0644 ./compcert.config $(DESTDIR)$(COQDEVDIR)
+	@(echo "To use, pass the following to coq_makefile or add the following to _CoqProject:"; echo "-R $(COQDEVDIR) compcert") > $(DESTDIR)$(COQDEVDIR)/README
+endif
 
 clean:
 	rm -f $(patsubst %, %/*.vo*, $(DIRS))
