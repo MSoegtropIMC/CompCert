@@ -16,7 +16,7 @@
 (** Architecture-dependent parameters for AArch64 *)
 
 Require Import ZArith List.
-(*From Flocq*)
+From Flocq
 Require Import Binary Bits.
 
 Definition ptr64 := true.
