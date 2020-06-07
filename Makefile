@@ -23,10 +23,10 @@ endif
 
 DIRS=lib common $(ARCHDIRS) backend cfrontend driver \
   flocq/Core flocq/Prop flocq/Calc flocq/IEEE754 \
-  exportclight MenhirLib cparser
+  exportclight cparser
 
 RECDIRS=lib common $(ARCHDIRS) backend cfrontend driver flocq exportclight \
-  MenhirLib cparser
+  cparser
 
 COQINCLUDES=$(foreach d, $(RECDIRS), -R $(d) compcert.$(d))
 
@@ -109,12 +109,6 @@ CFRONTEND=Ctypes.v Cop.v Csyntax.v Csem.v Ctyping.v Cstrategy.v Cexec.v \
 
 PARSER=Cabs.v Parser.v
 
-# MenhirLib
-
-MENHIRLIB=Alphabet.v Automaton.v Grammar.v Interpreter_complete.v \
-  Interpreter_correct.v Interpreter.v Main.v Validator_complete.v \
-  Validator_safe.v Validator_classes.v
-
 # Putting everything together (in driver/)
 
 DRIVER=Compopts.v Compiler.v Complements.v
@@ -122,7 +116,7 @@ DRIVER=Compopts.v Compiler.v Complements.v
 # All source files
 
 FILES=$(VLIB) $(COMMON) $(BACKEND) $(CFRONTEND) $(DRIVER) $(FLOCQ) \
-  $(MENHIRLIB) $(PARSER)
+  $(PARSER)
 
 # Generated source files
 
